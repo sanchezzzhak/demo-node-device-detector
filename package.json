@@ -7,11 +7,13 @@
     "start": "nodemon src/index.js"
   },
   "dependencies": {
+    "@types/node": "^18.11.10",
     "body-parser": "1.19.0",
     "ejs": "3.1.5",
     "finalhandler": "1.1.2",
-    "node-device-detector": "2.0.9",
-    "router": "1.3.5"
+    "node-device-detector": "https://github.com/sanchezzzhak/node-device-detector",
+    "router": "1.3.5",
+    "typescript": "^5.0.0-dev.20221205"
   },
   "devDependencies": {
     "nodemon": "*"

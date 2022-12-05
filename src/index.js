@@ -1,100 +1,80 @@
-const http = require("http");
-const finalhandler = require("finalhandler");
-const ejs = require("ejs");
-const Router = require("router");
-const DeviceDetector = require("node-device-detector");
-const ClientHints = require("node-device-detector/client-hints");
-const detectorVersion = require("node-device-detector/package.json").version;
-const InfoDevice = require("node-device-detector/parser/device/info-device");
-console.log({ detectorVersion });
-const bodyParser = require("body-parser");
-
-const routerOpts = {};
-const router = Router(routerOpts);
-const clientHints = new ClientHints();
-const detector = new DeviceDetector({
-  clientIndexes: true
+import * as http from 'http';
+import finalhandler from 'finalhandler';
+import ejs from 'ejs';
+import Router from 'router';
+import bodyParser from 'body-parser';
+import DeviceDetector from 'node-device-detector';
+import InfoDevice from 'node-device-detector/parser/device/info-device';
+import ClientHints from 'node-device-detector/client-hints';
+var detectorVersion = '2.0.9';
+console.log({ detectorVersion: detectorVersion });
+var routerOpts = {};
+var router = Router(routerOpts);
+var clientHints = new ClientHints();
+var detector = new DeviceDetector({
+    clientIndexes: true
 });
-const infoDevice = new InfoDevice();
-
+var infoDevice = new InfoDevice();
 infoDevice.setSizeConvertObject(true);
 infoDevice.setResolutionConvertObject(true);
-
-const port = 8080;
-const timeout = 3e5;
-
-const server = http.createServer(function onRequest(req, res) {
-  router(req, res, finalhandler(req, res));
+var port = 8080;
+var timeout = 3e5;
+var server = http.createServer(function onRequest(req, res) {
+    router(req, res, finalhandler(req, res));
 });
-
-server.listen({ port, timeout }, (err, result) => {
-  console.log("server listen port %s", port);
+server.listen({ port: port, timeout: timeout }, function () {
+    console.log("server listen port %s", port);
 });
-
-router.get("/", (req, res) => {
-  let upHeaders = ClientHints.getHeaderClientHints();
-  for (let headerName in upHeaders) {
-    res.setHeader(headerName, upHeaders[headerName]);
-  }
-  let headers = [];
-  for (let headerName in req.headers) {
-    let value = req.headers[headerName];
-    if (
-      headerName.indexOf("sec-ch-") !== -1 ||
-      headerName.indexOf("x-requested-with") !== -1
-    ) {
-      headers.push(headerName + ":" + value);
+router.get("/", function (req, res) {
+    var upHeaders = ClientHints.getHeaderClientHints();
+    for (var headerName in upHeaders) {
+        res.setHeader(headerName, upHeaders[headerName]);
     }
-  }
-
-  let data = { version: detectorVersion, headers: headers.join("\n") };
-  let options = { cache: false };
-  let filename = __dirname + "/views/index.html";
-
-  ejs.renderFile(filename, data, options, (err, str) => {
-    return res.end(str);
-  });
+    var headers = [];
+    for (var headerName in req.headers) {
+        var value = req.headers[headerName];
+        if (headerName.indexOf("sec-ch-") !== -1 ||
+            headerName.indexOf("x-requested-with") !== -1) {
+            headers.push(headerName + ":" + value);
+        }
+    }
+    var data = { version: detectorVersion, headers: headers.join("\n") };
+    var options = { cache: false };
+    var filename = __dirname + "/views/index.html";
+    ejs.renderFile(filename, data, options, function (err, str) {
+        return res.end(str);
+    });
 });
-
-const api = Router();
+var api = Router();
 router.use("/api/", api);
 api.use(bodyParser.json());
-
-api.post("/detect", (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Headers", "origin, content-type, accept");
-  let { useragent, aboutDevice, enableIndex, headers } = req.body;
-  let customHeaders = {};
-  headers.split("\n").forEach((item) => {
-    let partStr = item.split(":", 2);
-    customHeaders[partStr[0]] = partStr[1];
-  });
-
-  detector.deviceIndexes = Boolean(enableIndex);
-
-  let time0 = new Date().getTime();
-  const clientHintData = clientHints.parse(customHeaders);
-  let deviceResult = detector.detect(useragent, clientHintData);
-  let time1 = new Date().getTime();
-  let botResult = detector.parseBot(useragent);
-  let time2 = new Date().getTime();
-
-  let deviceInfoResult = null;
-  if (aboutDevice) {
-    deviceInfoResult = infoDevice.info(
-      deviceResult.device.brand,
-      deviceResult.device.model
-    );
-  }
-
-  res.end(
-    JSON.stringify({
-      useragent,
-      deviceResultTime: time1 - time0 + " ms.",
-      deviceResult,
-      botResult,
-      botResultTime: time2 - time1 + " ms.",
-      deviceInfoResult
-    })
-  );
+api.post("/detect", function (req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "origin, content-type, accept");
+    var _a = req.body, useragent = _a.useragent, aboutDevice = _a.aboutDevice, enableIndex = _a.enableIndex, headers = _a.headers;
+    var customHeaders = {};
+    headers.split("\n").forEach(function (item) {
+        var partStr = item.split(":", 2);
+        customHeaders[partStr[0]] = partStr[1];
+    });
+    detector.deviceIndexes = Boolean(enableIndex);
+    var time0 = new Date().getTime();
+    var clientHintData = clientHints.parse(customHeaders);
+    var deviceResult = detector.detect(useragent, clientHintData);
+    var time1 = new Date().getTime();
+    var botResult = detector.parseBot(useragent);
+    var time2 = new Date().getTime();
+    var deviceInfoResult = null;
+    if (aboutDevice) {
+        deviceInfoResult = infoDevice.info(deviceResult.device.brand, deviceResult.device.model);
+    }
+    res.end(JSON.stringify({
+        useragent: useragent,
+        deviceResultTime: time1 - time0 + " ms.",
+        deviceResult: deviceResult,
+        botResult: botResult,
+        botResultTime: time2 - time1 + " ms.",
+        deviceInfoResult: deviceInfoResult
+    }));
 });
+//# sourceMappingURL=index.js.map
