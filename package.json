@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Universal library for detecting devices based on the string `UserAgent`. We can identify: App, Bot, OS, Browser, Device brand, Device model and Device type (smartphone, phablet, tablet, desktop, TV and other types, total 13)",
   "main": "src/index.js",
+  "type": "commonjs",
   "scripts": {
     "start": "nodemon src/index.js"
   },

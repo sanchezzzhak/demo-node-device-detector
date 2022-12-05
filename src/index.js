@@ -1,32 +1,37 @@
-import * as http from 'http';
-import finalhandler from 'finalhandler';
-import ejs from 'ejs';
-import Router from 'router';
-import bodyParser from 'body-parser';
-import DeviceDetector from 'node-device-detector';
-import InfoDevice from 'node-device-detector/parser/device/info-device';
-import ClientHints from 'node-device-detector/client-hints';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const http_1 = __importDefault(require("http"));
+const finalhandler_1 = __importDefault(require("finalhandler"));
+const ejs_1 = __importDefault(require("ejs"));
+const router_1 = __importDefault(require("router"));
+const body_parser_1 = __importDefault(require("body-parser"));
+const node_device_detector_1 = __importDefault(require("node-device-detector"));
+const info_device_1 = __importDefault(require("node-device-detector/parser/device/info-device"));
+const client_hints_1 = __importDefault(require("node-device-detector/client-hints"));
 const detectorVersion = '2.0.9';
 console.log({ detectorVersion });
 const routerOpts = {};
-const router = Router(routerOpts);
-const clientHints = new ClientHints();
-const detector = new DeviceDetector({
+const router = (0, router_1.default)(routerOpts);
+const clientHints = new client_hints_1.default();
+const detector = new node_device_detector_1.default({
     clientIndexes: true
 });
-const infoDevice = new InfoDevice();
+const infoDevice = new info_device_1.default();
 infoDevice.setSizeConvertObject(true);
 infoDevice.setResolutionConvertObject(true);
 const port = 8080;
 const timeout = 3e5;
-const server = http.createServer(function onRequest(req, res) {
-    router(req, res, finalhandler(req, res));
+const server = http_1.default.createServer(function onRequest(req, res) {
+    router(req, res, (0, finalhandler_1.default)(req, res));
 });
 server.listen({ port, timeout }, () => {
     console.log("server listen port %s", port);
 });
 router.get("/", (req, res) => {
-    let upHeaders = ClientHints.getHeaderClientHints();
+    let upHeaders = client_hints_1.default.getHeaderClientHints();
     for (let headerName in upHeaders) {
         res.setHeader(headerName, upHeaders[headerName]);
     }
@@ -41,13 +46,13 @@ router.get("/", (req, res) => {
     let data = { version: detectorVersion, headers: headers.join("\n") };
     let options = { cache: false };
     let filename = __dirname + "/views/index.html";
-    ejs.renderFile(filename, data, options, (err, str) => {
+    ejs_1.default.renderFile(filename, data, options, (err, str) => {
         return res.end(str);
     });
 });
-const api = Router();
+const api = (0, router_1.default)();
 router.use("/api/", api);
-api.use(bodyParser.json());
+api.use(body_parser_1.default.json());
 api.post("/detect", (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Headers", "origin, content-type, accept");
